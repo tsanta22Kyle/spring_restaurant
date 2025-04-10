@@ -1,4 +1,4 @@
-package org.accdatabase.stockmanager_spring.entities;
+package org.accdatabase.stockmanager_spring.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -41,7 +41,6 @@ public class Ingredient {
         StockMove stockQuantity = new StockMove();
         stockQuantity.setQuantity(totalStockIngredient);
         stockQuantity.setMoveDate(date);
-        stockQuantity.setUnit(this.getPriceAtDate().getUnit());
 
         return stockQuantity;
     }
@@ -54,7 +53,7 @@ public class Ingredient {
         StockMove stockQuantity = new StockMove();
         stockQuantity.setQuantity(totalStockIngredient);
         //stockQuantity.setMoveDate();
-        stockQuantity.setUnit(this.getPriceAtDate().getUnit());
+       // stockQuantity.setUnit(this.getPriceAtDate().getUnit());
 
         return stockQuantity;
     }

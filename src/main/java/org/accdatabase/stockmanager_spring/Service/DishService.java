@@ -1,9 +1,9 @@
 package org.accdatabase.stockmanager_spring.Service;
 
 
-import org.accdatabase.stockmanager_spring.Repository.DAO.DataSource;
-import org.accdatabase.stockmanager_spring.Repository.DAO.DishCrudRequests;
-import org.accdatabase.stockmanager_spring.entities.Dish;
+import org.accdatabase.stockmanager_spring.DAO.DataSource;
+import org.accdatabase.stockmanager_spring.DAO.operations.DishCrudRequests;
+import org.accdatabase.stockmanager_spring.model.Dish;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

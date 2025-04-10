@@ -1,6 +1,7 @@
-package org.accdatabase.stockmanager_spring.Repository.DAO;
+package org.accdatabase.stockmanager_spring.DAO.operations;
 
-import org.accdatabase.stockmanager_spring.entities.Dish;
+import org.accdatabase.stockmanager_spring.DAO.DataSource;
+import org.accdatabase.stockmanager_spring.model.Dish;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -13,20 +14,16 @@ import java.util.List;
 @Repository
 public class DishCrudRequests {
 
-    private IngredientCrudRequests ingredientCrudRequests = new IngredientCrudRequests(this.dataSource) ;
-    private DataSource dataSource = new DataSource();
-
     @Autowired
-    public DishCrudRequests(IngredientCrudRequests ingredientCrudRequests, DataSource dataSource) {
-        this.ingredientCrudRequests = ingredientCrudRequests;
-        this.dataSource = dataSource;
-    }
+    private IngredientCrudRequests ingredientCrudRequests;
+    @Autowired
+    private DataSource dataSource;
+
+
 
     public DishCrudRequests() {
         this.dataSource = new DataSource();
     }
-
-
 
 
     public List<Dish> findAll(int page, int size) {
@@ -44,7 +41,7 @@ public class DishCrudRequests {
                     dish.setDishId(rs.getString("dish_id"));
                     dish.setName(rs.getString(2));
                     dish.setUnitPrice(rs.getInt("unit_price"));
-                   dish.setIngredientList(ingredientCrudRequests.findIngredientByDishId(dish.getDishId()));
+                    dish.setIngredientList(ingredientCrudRequests.findIngredientByDishId(dish.getDishId()));
 
                 }
                 dishes.add(dish);

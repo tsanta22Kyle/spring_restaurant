@@ -1,4 +1,4 @@
-package org.accdatabase.stockmanager_spring.entities;
+package org.accdatabase.stockmanager_spring.model;
 
 
 import lombok.AllArgsConstructor;
@@ -13,10 +13,12 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class StockMove {
+    private String id;
     private MoveType moveType;
     private double quantity;
     private unit unit;
     private LocalDateTime moveDate;
+    private Ingredient ingredient;
 
     @Override
     public String toString() {

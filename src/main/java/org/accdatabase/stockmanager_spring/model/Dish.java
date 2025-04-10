@@ -1,4 +1,4 @@
-package org.accdatabase.stockmanager_spring.entities;
+package org.accdatabase.stockmanager_spring.model;
 
 import lombok.*;
 

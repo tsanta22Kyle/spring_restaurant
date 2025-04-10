@@ -1,7 +1,7 @@
-package org.accdatabase.stockmanager_spring.RestController;
+package org.accdatabase.stockmanager_spring.endpoint;
 
 import org.accdatabase.stockmanager_spring.Service.DishService;
-import org.accdatabase.stockmanager_spring.entities.Dish;
+import org.accdatabase.stockmanager_spring.model.Dish;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,10 +22,7 @@ public class DishController {
     public String Test(){
         return "hello world";
     }
-    @GetMapping("")
-    public String est(){
-        return "hello world";
-    }
+
     @GetMapping("dish")
     public List<Dish> dishs(){
         return dishService. getAll();

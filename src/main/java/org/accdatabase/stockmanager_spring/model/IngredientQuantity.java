@@ -1,6 +1,5 @@
-package org.accdatabase.stockmanager_spring.entities;
+package org.accdatabase.stockmanager_spring.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,11 +20,11 @@ public class IngredientQuantity {
         return quantity;
     }
 
-    public org.accdatabase.stockmanager_spring.entities.unit getUnit() {
+    public org.accdatabase.stockmanager_spring.model.unit getUnit() {
         return unit;
     }
 
-    public IngredientQuantity(Ingredient ingredient, double quantity, org.accdatabase.stockmanager_spring.entities.unit unit) {
+    public IngredientQuantity(Ingredient ingredient, double quantity, org.accdatabase.stockmanager_spring.model.unit unit) {
         this.ingredient = ingredient;
         this.quantity = quantity;
         this.unit = unit;
