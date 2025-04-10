@@ -1,17 +1,18 @@
 package org.accdatabase.stockmanager_spring.DAO.operations;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.accdatabase.stockmanager_spring.DAO.DataSource;
+import org.accdatabase.stockmanager_spring.DAO.PostgresNextReference;
 import org.accdatabase.stockmanager_spring.DAO.mapper.IngredientMapper;
 import org.accdatabase.stockmanager_spring.Service.exception.NotFoundException;
 import org.accdatabase.stockmanager_spring.Service.exception.ServerException;
-import org.accdatabase.stockmanager_spring.model.Ingredient;
-import org.accdatabase.stockmanager_spring.model.IngredientQuantity;
-import org.accdatabase.stockmanager_spring.model.unit;
+import org.accdatabase.stockmanager_spring.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +28,7 @@ public class IngredientCrudRequests {
     private StockCrudRequests stockCrudRequests;
     @Autowired
     private IngredientMapper ingredientMapper;
+    final PostgresNextReference postgresNextReference = new PostgresNextReference();
 
 
     public Ingredient findById(String id) {
@@ -98,33 +100,33 @@ public class IngredientCrudRequests {
 
         return ingredients;
     }
+    @SneakyThrows
+    public List<Ingredient> saveAll(List<Ingredient> toSave) {
+        List<Ingredient> ingredients = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection()) {
+            toSave.forEach(entityToSave -> {
+                try (PreparedStatement statement =
+                             connection.prepareStatement("insert into ingredient (ingredient_id, name) values (?, ?)"
+                                     + " on conflict (ingredient_id) do update set name=excluded.name"
+                                     + " returning ingredient_id, name")) {
+                    String id = entityToSave.getIngredientId() == null ? postgresNextReference.nextID("entityToSave", connection) : entityToSave.getIngredientId();
+                    statement.setString(1, id);
+                    statement.setString(2, entityToSave.getName());
+                    ResultSet resultSet = statement.executeQuery();
 
-    public List<Ingredient> saveAll(List<Ingredient> ingredients) {
-        List<Ingredient> savedIngredients = new ArrayList<>();
-        try (
-                Connection connection = dataSource.getConnection();
-                PreparedStatement statement = connection.prepareStatement("INSERT INTO ingredient (ingredient_id, name) VALUES (?,?) on conflict (ingredient_id) do update set name=excluded.name  returning ingredient_id,name");
-        ) {
-            ingredients.forEach(ingredient -> {
-                try {
-                    statement.setString(1, ingredient.getIngredientId());
-                    statement.setString(2, ingredient.getName());
-                    statement.addBatch();
+                    if (resultSet.next()) {
+                        Ingredient savedIngredient = ingredientMapper.apply(resultSet);
+                        List<Price> prices = priceCrudRequests.saveAll(entityToSave.getPrices());
+                        List<StockMove> stockMovements = stockCrudRequests.saveAll(entityToSave.getStockMoves());
+                        savedIngredient.addPrices(prices);
+                        savedIngredient.addStockMovements(stockMovements);
+                        ingredients.add(savedIngredient);
+                    }
                 } catch (SQLException e) {
-                    throw new ServerException(e);
+                    throw new RuntimeException(e);
                 }
-                priceCrudRequests.saveAll(ingredient.getPrices());
-                stockCrudRequests.saveAll(ingredient.getStockMoves());
             });
-            try (ResultSet rs = statement.executeQuery()) {
-                while (rs.next()) {
-                    savedIngredients.add(ingredientMapper.apply(rs));
-                }
-            }
-
-        } catch (SQLException e) {
-            throw new ServerException(e);
         }
-        return savedIngredients;
+        return ingredients;
     }
 }

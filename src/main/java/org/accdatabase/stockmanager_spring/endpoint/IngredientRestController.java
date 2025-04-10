@@ -5,8 +5,11 @@ import org.accdatabase.stockmanager_spring.Service.IngredientService;
 import org.accdatabase.stockmanager_spring.Service.exception.ClientException;
 import org.accdatabase.stockmanager_spring.Service.exception.NotFoundException;
 import org.accdatabase.stockmanager_spring.Service.exception.ServerException;
+import org.accdatabase.stockmanager_spring.endpoint.rest.CreateIngredientPrice;
 import org.accdatabase.stockmanager_spring.endpoint.rest.CreateOrUpdateIngredient;
+import org.accdatabase.stockmanager_spring.endpoint.rest.IngredientRest;
 import org.accdatabase.stockmanager_spring.model.Ingredient;
+import org.accdatabase.stockmanager_spring.model.Price;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -78,6 +81,10 @@ public class IngredientRestController {
 
         return ResponseEntity.of(ingredientService.addAll(ingredientToUpdate));
 
+    }
+    @PutMapping("/{ingredientId}/prices")
+    public ResponseEntity<Object> updateIngredientPrices(@PathVariable String ingredientId, @RequestBody List<CreateIngredientPrice> ingredientPrices) {
+        return ResponseEntity.ok().body(ingredientService.addPrices(ingredientId,ingredientPrices));
     }
 
 }

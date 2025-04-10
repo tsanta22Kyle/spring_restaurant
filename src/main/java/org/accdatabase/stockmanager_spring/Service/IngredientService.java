@@ -3,8 +3,11 @@ package org.accdatabase.stockmanager_spring.Service;
 import org.accdatabase.stockmanager_spring.DAO.operations.IngredientCrudRequests;
 import org.accdatabase.stockmanager_spring.Service.exception.ClientException;
 import org.accdatabase.stockmanager_spring.endpoint.mapper.IngredientRestMapper;
+import org.accdatabase.stockmanager_spring.endpoint.rest.CreateIngredientPrice;
 import org.accdatabase.stockmanager_spring.endpoint.rest.CreateOrUpdateIngredient;
+import org.accdatabase.stockmanager_spring.endpoint.rest.IngredientRest;
 import org.accdatabase.stockmanager_spring.model.Ingredient;
+import org.accdatabase.stockmanager_spring.model.Price;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +20,7 @@ public class IngredientService {
     private IngredientCrudRequests ingredientCrudRequests;
     @Autowired
     private IngredientRestMapper ingredientRestMapper;
+
 
 
     public Optional<Object> getAllIngredientsByPrice(int page, int size, Double maxPrice, Double minPrice) {
@@ -51,10 +55,27 @@ public class IngredientService {
         //System.out.println("ingredients to add :"+ingredientToAdd);
         List<Ingredient> mappedIngredients = ingredientToAdd.stream().map(createOrUpdateIngredient -> ingredientRestMapper.toModel(createOrUpdateIngredient)).toList();
        // System.out.println("mapped ingredients : "+mappedIngredients);
+
         return Optional.of(ingredientCrudRequests.saveAll(mappedIngredients).stream().map(ingredient -> ingredientRestMapper.toRest(ingredient)).toList());
     }
 
     public Optional<Object> findById(String id) {
         return Optional.of(ingredientRestMapper.toRest(ingredientCrudRequests.findById(id)));
+    }
+
+    public Optional<Object> addPrices(String ingredientId, List<CreateIngredientPrice> ingredientPrices) {
+        List<Price> prices = ingredientPrices.stream()
+                .map(ingredientPrice ->{
+                    Price price = new Price();
+                    price.setValue(ingredientPrice.getValue());
+                    price.setDate(ingredientPrice.getDateValue());
+                    return price;
+                })
+                .toList();
+        Ingredient ingredient = ingredientCrudRequests.findById(ingredientId);
+        ingredient.addPrices(prices);
+        List<Ingredient> priceChangedIngredient = ingredientCrudRequests.saveAll(List.of(ingredient));
+        IngredientRest ingredientRest = ingredientRestMapper.toRest(priceChangedIngredient.get(0));
+        return Optional.of(ingredientRest);
     }
 }

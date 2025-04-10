@@ -68,4 +68,23 @@ public class Ingredient {
                         "\nprices=" + prices ;
     }
 
+    public List<Price> addPrices(List<Price> prices) {
+        prices.forEach(price -> price.setIngredient(this));
+        if (getPrices() == null || getPrices().isEmpty()) {
+            setPrices(prices);
+            return prices;
+        }
+        getPrices().addAll(prices);
+        return getPrices();
+    }
+
+    public List<StockMove> addStockMovements(List<StockMove> stockMovements) {
+        stockMovements.forEach(stockMovement -> stockMovement.setIngredient(this));
+        if (getStockMoves() == null || getStockMoves().isEmpty()) {
+            setStockMoves(stockMovements);
+            return stockMovements;
+        }
+        getStockMoves().addAll(stockMovements);
+        return getStockMoves();
+    }
 }
