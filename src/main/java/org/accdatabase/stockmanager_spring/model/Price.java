@@ -19,7 +19,7 @@ public class Price {
                 "id='" + id + '\'' +
                 ", value=" + value +
                 ", date=" + date +
-                ", ingredient=id" + this.getIngredient().getIngredientId() +
+                //", ingredient=id" + this.getIngredient().getIngredientId() +
                 '}';
     }
 }

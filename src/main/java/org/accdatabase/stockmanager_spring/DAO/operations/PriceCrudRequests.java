@@ -40,7 +40,7 @@ public class PriceCrudRequests implements CrudRequests<Price> {
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement =
                          connection.prepareStatement("insert into price (price_id, value, date, ingredient_id) values (?, ?, ?, ?)"
-                                 + " on conflict (price_id) do nothing"
+                                 + " on conflict  do nothing"
                                  + " returning price_id, value, date, ingredient_id");) {
                 System.out.println("entities : "+entities);
                 entities.forEach(entityToSave -> {

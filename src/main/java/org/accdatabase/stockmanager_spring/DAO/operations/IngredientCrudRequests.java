@@ -31,20 +31,20 @@ public class IngredientCrudRequests {
     final PostgresNextReference postgresNextReference = new PostgresNextReference();
 
 
-    public Ingredient findById(String id) {
-        //Ingredient ingredient = null;
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement statement = conn.prepareStatement("select ingredient_id, name, update_datetime from ingredient where ingredient_id = ?");
-        ) {
-            statement.setString(1, id);
-            try (ResultSet rs = statement.executeQuery()) {
-                if (rs.next()) {
-                    return ingredientMapper.apply(rs);
-                }
-                throw new NotFoundException("Ingredient with id " + id + " not found");
-            }
 
+    public Ingredient findById(String id) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "select i.ingredient_id, i.name, di.dish_id as dish_ingredient_id, di.required_quantity, di.unit from ingredient i"
+                             + " left join dish_ingredient di on i.ingredient_id = di.ingredient_id"
+                             + " where i.ingredient_id = ?")) {
+            statement.setString(1, id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return ingredientMapper.apply(resultSet);
+                }
+                throw new NotFoundException("Ingredient.id=" + id + " not found");
+            }
         } catch (SQLException e) {
             throw new ServerException(e);
         }
@@ -109,17 +109,35 @@ public class IngredientCrudRequests {
                              connection.prepareStatement("insert into ingredient (ingredient_id, name) values (?, ?)"
                                      + " on conflict (ingredient_id) do update set name=excluded.name"
                                      + " returning ingredient_id, name")) {
-                    String id = entityToSave.getIngredientId() == null ? postgresNextReference.generateUUID() : entityToSave.getIngredientId();
+
+
+                    String id = entityToSave.getIngredientId() == null
+                            ? postgresNextReference.generateUUID()
+                            : entityToSave.getIngredientId();
+                    entityToSave.setIngredientId(id);
+
                     statement.setString(1, id);
                     statement.setString(2, entityToSave.getName());
                     ResultSet resultSet = statement.executeQuery();
 
                     if (resultSet.next()) {
                         Ingredient savedIngredient = ingredientMapper.apply(resultSet);
+
+
+                        if (entityToSave.getPrices() != null) {
+                            entityToSave.getPrices().forEach(price -> {
+                                price.setIngredient(entityToSave);
+                            });
+                        }
+
+
                         List<Price> prices = priceCrudRequests.saveAll(entityToSave.getPrices());
                         List<StockMove> stockMovements = stockCrudRequests.saveAll(entityToSave.getStockMoves());
+
+
                         savedIngredient.addPrices(prices);
                         savedIngredient.addStockMovements(stockMovements);
+
                         ingredients.add(savedIngredient);
                     }
                 } catch (SQLException e) {
@@ -129,4 +147,5 @@ public class IngredientCrudRequests {
         }
         return ingredients;
     }
+
 }
