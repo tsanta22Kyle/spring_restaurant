@@ -32,6 +32,7 @@ public class IngredientMapper implements Function<ResultSet, Ingredient> {
         ingredient.setName(resultSet.getString(2));
         ingredient.setPrices(prices);
         ingredient.setStockMoves(stockMoves);
+        System.out.println("ingrediend by id :"+ingredient);
         return ingredient;
     }
 }

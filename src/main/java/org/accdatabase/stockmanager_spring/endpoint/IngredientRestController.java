@@ -6,6 +6,7 @@ import org.accdatabase.stockmanager_spring.Service.exception.ClientException;
 import org.accdatabase.stockmanager_spring.Service.exception.NotFoundException;
 import org.accdatabase.stockmanager_spring.Service.exception.ServerException;
 import org.accdatabase.stockmanager_spring.endpoint.rest.CreateIngredientPrice;
+import org.accdatabase.stockmanager_spring.endpoint.rest.CreateIngredientStock;
 import org.accdatabase.stockmanager_spring.endpoint.rest.CreateOrUpdateIngredient;
 import org.accdatabase.stockmanager_spring.endpoint.rest.IngredientRest;
 import org.accdatabase.stockmanager_spring.model.Ingredient;
@@ -84,7 +85,29 @@ public class IngredientRestController {
     }
     @PutMapping("/{ingredientId}/prices")
     public ResponseEntity<Object> updateIngredientPrices(@PathVariable String ingredientId, @RequestBody List<CreateIngredientPrice> ingredientPrices) {
+        try{
         return ResponseEntity.ok().body(ingredientService.addPrices(ingredientId,ingredientPrices));
+        }catch (NotFoundException e){
+            return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
+        }catch (ClientException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }catch (ServerException e){
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
+
     }
 
+    @PutMapping("/{ingredientId}/stockMovements")
+    public ResponseEntity<Object> updateIngredientStockMoves(@PathVariable String ingredientId,@RequestBody List<CreateIngredientStock> ingredientStocks){
+        try {
+
+            return ResponseEntity.of(ingredientService.addStocks(ingredientId,ingredientStocks));
+        }catch (ClientException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }catch (NotFoundException e){
+            return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
+        }catch (ServerException e){
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
+    }
 }

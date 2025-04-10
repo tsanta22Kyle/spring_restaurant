@@ -22,7 +22,7 @@ public class PriceMapper implements Function<ResultSet,Price> {
         price.setId(resultSet.getString("price_id"));
         price.setValue(resultSet.getDouble("value"));
         price.setDate(resultSet.getDate("date").toLocalDate());
-
+        System.out.println("returned price: " + price.getValue());
         return price;
     }
 }

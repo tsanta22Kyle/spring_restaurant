@@ -1,0 +1,221 @@
+openapi: 3.1.0
+info:
+  title: Restaurant Management API - 2025
+  description : no description XD
+  version: 1.0.0
+paths:
+  /ingredients:
+    get:
+      summary: Get paginated list of ingredients
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 5
+      responses:
+        '200':
+          description: List of ingredients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IngredientRest'
+    post:
+      summary: Add a list of ingredients
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateOrUpdateIngredient'
+      responses:
+        '200':
+          description: Ingredients added
+    put:
+      summary: Update a list of ingredients
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateOrUpdateIngredient'
+      responses:
+        '200':
+          description: Ingredients updated
+
+  /ingredients/filter:
+    get:
+      summary: Filter ingredients by price range
+      parameters:
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 5
+      responses:
+        '200':
+          description: Filtered list of ingredients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IngredientRest'
+
+  /ingredients/{id}:
+    get:
+      summary: Get ingredient by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ingredient found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngredientRest'
+
+  /ingredients/{ingredientId}/prices:
+    put:
+      summary: Update prices of an ingredient
+      parameters:
+        - name: ingredientId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateIngredientPrice'
+      responses:
+        '200':
+          description: Prices updated
+
+  /ingredients/{ingredientId}/stockMovements:
+    put:
+      summary: Update stock movements of an ingredient
+      parameters:
+        - name: ingredientId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateIngredientStock'
+      responses:
+        '200':
+          description: Stock movements updated
+
+components:
+  schemas:
+    CreateIngredientPrice:
+      type: object
+      properties:
+        value:
+          type: number
+        dateValue:
+          type: string
+          format: date
+
+    CreateIngredientStock:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [inComing, outComing]
+        quantity:
+          type: number
+        unit:
+          type: string
+
+    CreateOrUpdateIngredient:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+
+    IngredientRest:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        prices:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceRest'
+        stockMovements:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockMoveRest'
+
+    PriceRest:
+      type: object
+      properties:
+        id:
+          type: string
+        price:
+          type: number
+        dateValue:
+          type: string
+          format: date
+
+    StockMoveRest:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [inComing, outComing]
+        quantity:
+          type: number
+        unit:
+          type: string
+        creationDatetime:
+          type: string
+          format: date-time
+
+  

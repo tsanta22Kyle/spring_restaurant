@@ -32,7 +32,7 @@ public class IngredientCrudRequests {
 
 
     public Ingredient findById(String id) {
-        Ingredient ingredient = null;
+        //Ingredient ingredient = null;
         try (
                 Connection conn = dataSource.getConnection();
                 PreparedStatement statement = conn.prepareStatement("select ingredient_id, name, update_datetime from ingredient where ingredient_id = ?");
@@ -109,7 +109,7 @@ public class IngredientCrudRequests {
                              connection.prepareStatement("insert into ingredient (ingredient_id, name) values (?, ?)"
                                      + " on conflict (ingredient_id) do update set name=excluded.name"
                                      + " returning ingredient_id, name")) {
-                    String id = entityToSave.getIngredientId() == null ? postgresNextReference.nextID("entityToSave", connection) : entityToSave.getIngredientId();
+                    String id = entityToSave.getIngredientId() == null ? postgresNextReference.generateUUID() : entityToSave.getIngredientId();
                     statement.setString(1, id);
                     statement.setString(2, entityToSave.getName());
                     ResultSet resultSet = statement.executeQuery();

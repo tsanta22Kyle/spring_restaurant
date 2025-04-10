@@ -5,7 +5,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 
-@NoArgsConstructor@AllArgsConstructor@Setter@Getter@ToString@EqualsAndHashCode
+@NoArgsConstructor@AllArgsConstructor@Setter@Getter
 public class Price {
     private String id;
     private double value;
@@ -13,6 +13,13 @@ public class Price {
 
     private Ingredient ingredient;
 
-
-
+    @Override
+    public String toString() {
+        return "Price{" +
+                "id='" + id + '\'' +
+                ", value=" + value +
+                ", date=" + date +
+                ", ingredient=id" + this.getIngredient().getIngredientId() +
+                '}';
+    }
 }

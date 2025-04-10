@@ -2,6 +2,7 @@ package org.accdatabase.stockmanager_spring.DAO.operations;
 
 import lombok.SneakyThrows;
 import org.accdatabase.stockmanager_spring.DAO.DataSource;
+import org.accdatabase.stockmanager_spring.DAO.PostgresNextReference;
 import org.accdatabase.stockmanager_spring.DAO.mapper.PriceMapper;
 import org.accdatabase.stockmanager_spring.model.Price;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ public class PriceCrudRequests implements CrudRequests<Price> {
 
     @Autowired private PriceMapper priceMapper;
     @Autowired private DataSource dataSource;
+    final PostgresNextReference postgresNextReference = new PostgresNextReference();
 
     @Override
     public Price findById(String id) {
@@ -32,41 +34,37 @@ public class PriceCrudRequests implements CrudRequests<Price> {
     @SneakyThrows
     @Override
     public List<Price> saveAll(List<Price> entities) {
-        if(entities != null && !entities.isEmpty()) {
 
-        List<Price> prices = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement =
-                     connection.prepareStatement("insert into price (price_id, value, date, ingredient_id) values (?, ?, ?, ?)"
-                             + " on conflict (price_id) do nothing"
-                             + " returning price_id, value, date, ingredient_id")) {
-            entities.forEach(entityToSave -> {
-                if(entityToSave.getIngredient() != null) {
 
-                try {
-                    System.out.println(entityToSave);
-                    statement.setString(1, entityToSave.getId());
-                    statement.setDouble(2, entityToSave.getValue());
-                    statement.setDate(3, Date.valueOf(entityToSave.getDate()));
-                    statement.setString(4, entityToSave.getIngredient().getIngredientId());
-                    statement.addBatch(); // group by batch so executed as one query in database
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
+            List<Price> prices = new ArrayList<>();
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement statement =
+                         connection.prepareStatement("insert into price (price_id, value, date, ingredient_id) values (?, ?, ?, ?)"
+                                 + " on conflict (price_id) do nothing"
+                                 + " returning price_id, value, date, ingredient_id");) {
+                System.out.println("entities : "+entities);
+                entities.forEach(entityToSave -> {
+                    try {
+                        System.out.println("entity to save : "+entityToSave);
+                        String id = entityToSave.getId() == null ? postgresNextReference.generateUUID() : entityToSave.getId();
+                        statement.setString(1, id);
+                        statement.setDouble(2, entityToSave.getValue());
+                        statement.setDate(3, Date.valueOf(entityToSave.getDate()));
+                        System.out.println("entity to save's ingredient : "+entityToSave.getIngredient().getIngredientId());
+                        statement.setString(4, entityToSave.getIngredient().getIngredientId());
+                        statement.addBatch(); // group by batch so executed as one query in database
+                    } catch (SQLException e) {
+                        throw new org.accdatabase.stockmanager_spring.Service.exception.ServerException(e.getMessage());
+                    }
+                });
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        prices.add(priceMapper.apply(resultSet));
+                    }
                 }
-                }else {
-                    throw new IllegalArgumentException("l'ingredient de price n'existe pas");
-                }
-            });
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    prices.add(priceMapper.apply(resultSet));
-                }
+                return prices;
             }
-            return prices;
 
-        }
-        }
-        return List.of();
     }
 
     @SneakyThrows
