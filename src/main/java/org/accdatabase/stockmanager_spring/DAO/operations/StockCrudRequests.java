@@ -38,41 +38,39 @@ public class StockCrudRequests implements CrudRequests<StockMove> {
     @SneakyThrows
     @Override
     public List<StockMove> saveAll(List<StockMove> entityToSave) {
-        if(entityToSave.isEmpty()){
-            System.out.println("empty");
-            return List.of();
-        }
-        List<StockMove> stockMoves = new ArrayList<StockMove>();
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement statement = conn.prepareStatement("INSERT INTO stock_move(id,ingredient_id, movetype, quantity, unit,move_date) VALUES (?,?,?,?,?,?) ON CONFLICT (id) DO NOTHING RETURNING id, ingredient_id, movetype,quantity,move_date");
-        ) {
-            entityToSave.forEach(stockMove -> {
-                try {
-                    String id = stockMove.getId()==null ?postgresNextReference.generateUUID():stockMove.getId();
-                    System.out.println("stockmove : "+stockMove);
+        if (entityToSave.isEmpty()) return List.of();
+
+        List<StockMove> stockMoves = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection()) {
+            for (StockMove stockMove : entityToSave) {
+                try (PreparedStatement statement = conn.prepareStatement(
+                        "INSERT INTO stock_move(id, ingredient_id, movetype, quantity, unit, move_date) " +
+                                "VALUES (?, ?, ?, ?, ?, ?) " +
+                                "ON CONFLICT (id) DO NOTHING " +
+                                "RETURNING id, ingredient_id, movetype, quantity, unit, move_date"
+                )) {
+                    String id = stockMove.getId() == null ? postgresNextReference.generateUUID() : stockMove.getId();
                     statement.setString(1, id);
                     statement.setString(2, stockMove.getIngredient().getIngredientId());
-                    statement.setObject(3, stockMove.getMoveType().name(),Types.OTHER);
+                    statement.setObject(3, stockMove.getMoveType().name(), Types.OTHER);
                     statement.setDouble(4, stockMove.getQuantity());
-                    statement.setObject(5, stockMove.getUnit().name(),Types.OTHER);
+                    statement.setObject(5, stockMove.getUnit().name(), Types.OTHER);
                     statement.setTimestamp(6, Timestamp.from(Instant.now()));
-                    statement.addBatch();
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    stockMoves.add(stockMoveMapper.apply(resultSet));
-                }
-            }catch (SQLException e) {
-                throw new ServerException(e.getMessage());
-            }
 
+                    try (ResultSet rs = statement.executeQuery()) {
+                        if (rs.next()) {
+                            stockMoves.add(stockMoveMapper.apply(rs));
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new ServerException(e.getMessage());
         }
+
         return stockMoves;
     }
+
     @SneakyThrows
     public List<StockMove> findByIdIngredient(String idIngredient) {
         List<StockMove> stockMovements = new ArrayList<>();
