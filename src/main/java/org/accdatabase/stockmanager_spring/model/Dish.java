@@ -87,11 +87,13 @@ public class Dish {
         List<Double> quantities = new ArrayList<>();
 
         ingredientList.forEach(ingredientQuantity -> {
-            if(ingredientQuantity.getIngredient().getStockQuantityAt().getQuantity()==0){
+            if(ingredientQuantity.getIngredient().getAvailableQuantityAt(LocalDateTime.now())==0){
+                System.out.println("vide");
                 quantities.add(0.0);
             }else {
 
-                double quantity =  ingredientQuantity.getQuantity()/ingredientQuantity.getIngredient().getStockQuantityAt().getQuantity();
+                double quantity =  ingredientQuantity.getIngredient().getAvailableQuantityAt(LocalDateTime.now())/ingredientQuantity.getQuantity();
+               // System.out.println(" ingredient quantity : "+ingredientQuantity.getIngredient().getAvailableQuantityAt(LocalDateTime.now()));
                 quantities.add(quantity);
             }
         });

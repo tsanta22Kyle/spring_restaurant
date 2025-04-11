@@ -3,10 +3,13 @@ package org.accdatabase.stockmanager_spring.Service;
 
 import org.accdatabase.stockmanager_spring.DAO.DataSource;
 import org.accdatabase.stockmanager_spring.DAO.operations.DishCrudRequests;
+import org.accdatabase.stockmanager_spring.DAO.operations.IngredientCrudRequests;
 import org.accdatabase.stockmanager_spring.Service.exception.ClientException;
 import org.accdatabase.stockmanager_spring.endpoint.mapper.DishRestMapper;
+import org.accdatabase.stockmanager_spring.endpoint.rest.CreateDishIngredient;
 import org.accdatabase.stockmanager_spring.endpoint.rest.DishRest;
 import org.accdatabase.stockmanager_spring.model.Dish;
+import org.accdatabase.stockmanager_spring.model.Ingredient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +24,8 @@ public class DishService {
     private DishCrudRequests dishCrudRequests;
     @Autowired
     private DishRestMapper dishRestMapper;
+    @Autowired
+    private IngredientCrudRequests ingredientCrudRequests;
 
 
     public Optional<Object> getAll(int page, int size) {
@@ -31,5 +36,16 @@ public class DishService {
     List<DishRest> dishRests = dishCrudRequests.findAll(page, size).stream().map(dish -> dishRestMapper.toRest(dish) ).toList() ;
 
     return Optional.of(dishRests);
+    }
+
+    public Optional<Object> addDishIngredient(String id, List<CreateDishIngredient> ingredients) {
+
+        List<Ingredient> ingredientsToSave = ingredients.stream().map(createDishIngredient -> {
+            Ingredient ingredient = new Ingredient();
+            ingredient.setName(createDishIngredient.getName());
+            return ingredient;
+        }).toList();
+
+      List<Ingredient> savedIngredients =  ingredientCrudRequests.saveAll(ingredientsToSave);
     }
 }
