@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import static org.accdatabase.stockmanager_spring.model.MoveType.inComing;
+import static org.accdatabase.stockmanager_spring.model.MoveType.outComing;
 
 
 @AllArgsConstructor@NoArgsConstructor@Getter@Setter
@@ -34,7 +36,7 @@ public class Ingredient {
 
     public StockMove getStockQuantityAt(LocalDateTime date){
         List<StockMove> incomingStockMoves = stockMoves.stream().filter(stockMove -> stockMove.getMoveType().equals(MoveType.inComing) & stockMove.getMoveDate() == date).toList();
-        List<StockMove> outComingStockMoves = stockMoves.stream().filter(stockMove -> stockMove.getMoveType().equals(MoveType.outComing) & stockMove.getMoveDate() == date).toList();
+        List<StockMove> outComingStockMoves = stockMoves.stream().filter(stockMove -> stockMove.getMoveType().equals(outComing) & stockMove.getMoveDate() == date).toList();
         double incomingStockIngredient = incomingStockMoves.stream().mapToDouble(stockmove -> stockmove.getQuantity()).sum();
         double outcomingStockIngredient = outComingStockMoves.stream().mapToDouble(stockmove -> stockmove.getQuantity()).sum();
         double totalStockIngredient = incomingStockIngredient - outcomingStockIngredient;
@@ -46,7 +48,7 @@ public class Ingredient {
     }
     public StockMove getStockQuantityAt(){
         List<StockMove> incomingStockMoves = stockMoves.stream().filter(stockMove -> stockMove.getMoveType().equals(MoveType.inComing) & stockMove.getMoveDate() == LocalDateTime.now()).toList();
-        List<StockMove> outComingStockMoves = stockMoves.stream().filter(stockMove -> stockMove.getMoveType().equals(MoveType.outComing) & stockMove.getMoveDate() == LocalDateTime.now()).toList();
+        List<StockMove> outComingStockMoves = stockMoves.stream().filter(stockMove -> stockMove.getMoveType().equals(outComing) & stockMove.getMoveDate() == LocalDateTime.now()).toList();
         double incomingStockIngredient = incomingStockMoves.stream().mapToDouble(stockmove -> stockmove.getQuantity()).sum();
         double outcomingStockIngredient = outComingStockMoves.stream().mapToDouble(stockmove -> stockmove.getQuantity()).sum();
         double totalStockIngredient = incomingStockIngredient - outcomingStockIngredient;
@@ -54,9 +56,29 @@ public class Ingredient {
         stockQuantity.setQuantity(totalStockIngredient);
         //stockQuantity.setMoveDate();
        // stockQuantity.setUnit(this.getPriceAtDate().getUnit());
+        //System.out.println("stock :" + stockQuantity);
 
         return stockQuantity;
     }
+
+    public Double getAvailableQuantityAt(LocalDateTime datetime) {
+        System.out.println("stockmoves : "+stockMoves );
+        List<StockMove> stockMovementsBeforeToday = stockMoves.stream()
+                .filter(stockMovement ->
+                        stockMovement.getMoveDate().isBefore(datetime)
+                                || stockMovement.getMoveDate().equals(datetime))
+                .toList();
+        double quantity = 0;
+        for (StockMove stockMovement : stockMovementsBeforeToday) {
+            if (inComing.equals(stockMovement.getMoveType())) {
+                quantity += stockMovement.getQuantity();
+            } else if (outComing.equals(stockMovement.getMoveType())) {
+                quantity -= stockMovement.getQuantity();
+            }
+        }
+        return quantity;
+    } 
+
 
 
     @Override

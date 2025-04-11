@@ -67,6 +67,7 @@ public class IngredientCrudRequests {
                     ingredient.setIngredientId(rs.getString("ingredient_id"));
                     ingredient.setName(rs.getString("name"));
                     ingredient.setPrices(priceCrudRequests.findByIdIngredient(ingredient.getIngredientId()));
+                    ingredient.setStockMoves(stockCrudRequests.findByIdIngredient(ingredient.getIngredientId()));
                     ingredient.setUpdateDatetime(rs.getTimestamp("update_datetime").toLocalDateTime());
                     ingredientQuantities.add(new IngredientQuantity(ingredient, rs.getDouble("required_quantity"), unit.valueOf(rs.getString("unit").toString())));
                 }
