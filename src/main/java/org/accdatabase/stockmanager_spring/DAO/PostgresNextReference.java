@@ -37,6 +37,6 @@ public class PostgresNextReference {
         throw new ServerException("Unable to find sequence for table " + tableName);
     }
     public String generateUUID(){
-        return UUID.randomUUID().toString().split("-")[0];
+        return UUID.randomUUID().toString();
     }
 }

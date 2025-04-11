@@ -2,6 +2,7 @@ package org.accdatabase.stockmanager_spring.DAO.operations;
 
 import lombok.SneakyThrows;
 import org.accdatabase.stockmanager_spring.DAO.DataSource;
+import org.accdatabase.stockmanager_spring.DAO.PostgresNextReference;
 import org.accdatabase.stockmanager_spring.DAO.mapper.StockMoveMapper;
 import org.accdatabase.stockmanager_spring.model.StockMove;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ public class StockCrudRequests implements CrudRequests<StockMove> {
     DataSource dataSource;
     @Autowired
     StockMoveMapper stockMoveMapper;
-
+    final PostgresNextReference postgresNextReference = new PostgresNextReference();
 
     @Override
     public StockMove findById(String id) {
@@ -38,6 +39,7 @@ public class StockCrudRequests implements CrudRequests<StockMove> {
     @Override
     public List<StockMove> saveAll(List<StockMove> entityToSave) {
         if(entityToSave.isEmpty()){
+            System.out.println("empty");
             return List.of();
         }
         List<StockMove> stockMoves = new ArrayList<StockMove>();
@@ -47,7 +49,8 @@ public class StockCrudRequests implements CrudRequests<StockMove> {
         ) {
             entityToSave.forEach(stockMove -> {
                 try {
-
+                    String id = stockMove.getId()==null ?postgresNextReference.generateUUID():stockMove.getId();
+                    System.out.println("stockmove : "+stockMove);
                     statement.setString(1, stockMove.getId());
                     statement.setString(2, stockMove.getIngredient().getIngredientId());
                     statement.setObject(3, stockMove.getMoveType().name(),Types.OTHER);

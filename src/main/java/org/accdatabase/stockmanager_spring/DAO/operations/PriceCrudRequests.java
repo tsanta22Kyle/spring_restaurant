@@ -31,41 +31,36 @@ public class PriceCrudRequests implements CrudRequests<Price> {
         return List.of();
     }
 
-    @SneakyThrows
     @Override
+    @SneakyThrows
     public List<Price> saveAll(List<Price> entities) {
+        List<Price> prices = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection()) {
+            for (Price entityToSave : entities) {
+                try (PreparedStatement statement = connection.prepareStatement(
+                        "INSERT INTO price (price_id, value, date, ingredient_id) " +
+                                "VALUES (?, ?, ?, ?) " +
+                                "ON CONFLICT (ingredient_id, date) DO UPDATE SET " +
+                                "value = EXCLUDED.value, price_id = EXCLUDED.price_id " +
+                                "RETURNING price_id, value, date, ingredient_id")) {
 
+                    String id = entityToSave.getId() == null ? postgresNextReference.generateUUID() : entityToSave.getId();
+                    statement.setString(1, id);
+                    statement.setDouble(2, entityToSave.getValue());
+                    statement.setDate(3, Date.valueOf(entityToSave.getDate()));
+                    statement.setString(4, entityToSave.getIngredient().getIngredientId());
 
-            List<Price> prices = new ArrayList<>();
-            try (Connection connection = dataSource.getConnection();
-                 PreparedStatement statement =
-                         connection.prepareStatement("insert into price (price_id, value, date, ingredient_id) values (?, ?, ?, ?)"
-                                 + " on conflict  do nothing"
-                                 + " returning price_id, value, date, ingredient_id");) {
-                System.out.println("entities : "+entities);
-                entities.forEach(entityToSave -> {
-                    try {
-                        System.out.println("entity to save : "+entityToSave);
-                        String id = entityToSave.getId() == null ? postgresNextReference.generateUUID() : entityToSave.getId();
-                        statement.setString(1, id);
-                        statement.setDouble(2, entityToSave.getValue());
-                        statement.setDate(3, Date.valueOf(entityToSave.getDate()));
-                        System.out.println("entity to save's ingredient : "+entityToSave.getIngredient().getIngredientId());
-                        statement.setString(4, entityToSave.getIngredient().getIngredientId());
-                        statement.addBatch(); // group by batch so executed as one query in database
-                    } catch (SQLException e) {
-                        throw new org.accdatabase.stockmanager_spring.Service.exception.ServerException(e.getMessage());
-                    }
-                });
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    while (resultSet.next()) {
-                        prices.add(priceMapper.apply(resultSet));
+                    try (ResultSet rs = statement.executeQuery()) {
+                        if (rs.next()) {
+                            prices.add(priceMapper.apply(rs));
+                        }
                     }
                 }
-                return prices;
             }
-
+        }
+        return prices;
     }
+
 
     @SneakyThrows
     public List<Price> findByIdIngredient(String idIngredient) {

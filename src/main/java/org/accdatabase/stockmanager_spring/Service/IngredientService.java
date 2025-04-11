@@ -68,6 +68,7 @@ public class IngredientService {
     public Optional<Object> addPrices(String ingredientId, List<CreateIngredientPrice> ingredientPrices) {
         Ingredient ingredient = ingredientCrudRequests.findById(ingredientId);
         System.out.println("ingredient : "+ingredient);
+
         List<Price> prices = ingredientPrices.stream()
                 .map(ingredientPrice ->{
                     Price price = new Price();
@@ -94,6 +95,7 @@ public class IngredientService {
             return stockMove;
         }).toList();
         Ingredient ingredient = ingredientCrudRequests.findById(ingredientId);
+        ingredient.addStockMovements(stockMoves);
         List<Ingredient> stockIngredients = ingredientCrudRequests.saveAll(List.of(ingredient));
         IngredientRest ingredientRest = ingredientRestMapper.toRest(stockIngredients.get(0));
         return Optional.of(ingredientRest);
