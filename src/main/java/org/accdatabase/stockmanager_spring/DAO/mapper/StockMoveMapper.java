@@ -19,6 +19,7 @@ public class StockMoveMapper implements Function<ResultSet, StockMove> {
     @Override
     public StockMove apply(ResultSet resultSet) {
         StockMove stockMove = new StockMove();
+        System.out.println("resultset : " + resultSet);
         stockMove.setId(resultSet.getString("id"));
         stockMove.setQuantity(resultSet.getDouble("quantity"));
         stockMove.setMoveDate(resultSet.getTimestamp("move_date").toLocalDateTime());

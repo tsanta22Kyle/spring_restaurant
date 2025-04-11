@@ -51,7 +51,7 @@ public class StockCrudRequests implements CrudRequests<StockMove> {
                 try {
                     String id = stockMove.getId()==null ?postgresNextReference.generateUUID():stockMove.getId();
                     System.out.println("stockmove : "+stockMove);
-                    statement.setString(1, stockMove.getId());
+                    statement.setString(1, id);
                     statement.setString(2, stockMove.getIngredient().getIngredientId());
                     statement.setObject(3, stockMove.getMoveType().name(),Types.OTHER);
                     statement.setDouble(4, stockMove.getQuantity());

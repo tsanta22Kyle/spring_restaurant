@@ -31,7 +31,6 @@ public class IngredientCrudRequests {
     final PostgresNextReference postgresNextReference = new PostgresNextReference();
 
 
-
     public Ingredient findById(String id) {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(
@@ -100,6 +99,7 @@ public class IngredientCrudRequests {
 
         return ingredients;
     }
+
     @SneakyThrows
     public List<Ingredient> saveAll(List<Ingredient> toSave) {
         List<Ingredient> ingredients = new ArrayList<>();
@@ -115,7 +115,7 @@ public class IngredientCrudRequests {
                             ? postgresNextReference.generateUUID()
                             : entityToSave.getIngredientId();
                     entityToSave.setIngredientId(id);
-                    System.out.println("ingredient id : "+id);
+                    System.out.println("ingredient id : " + id);
 
                     statement.setString(1, id);
                     statement.setString(2, entityToSave.getName());
@@ -130,11 +130,16 @@ public class IngredientCrudRequests {
                                 price.setIngredient(entityToSave);
                             });
                         }
+                        if ( entityToSave.getStockMoves() != null){
+                            entityToSave.getStockMoves().forEach(stockMove -> {
+                                stockMove.setIngredient(entityToSave);
+                            });
+                        }
 
 
-                        List<Price> prices = priceCrudRequests.saveAll(entityToSave.getPrices());
+                            List<Price> prices = priceCrudRequests.saveAll(entityToSave.getPrices());
                         List<StockMove> stockMovements = stockCrudRequests.saveAll(entityToSave.getStockMoves());
-                        System.out.println("entity stockMove : "+entityToSave.getStockMoves());
+                        System.out.println("entity stockMove : " + entityToSave.getStockMoves());
 
                         savedIngredient.addPrices(prices);
                         savedIngredient.addStockMovements(stockMovements);
@@ -145,7 +150,7 @@ public class IngredientCrudRequests {
                     throw new RuntimeException(e);
                 }
             });
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new ServerException(e.getMessage());
         }
         return ingredients;
