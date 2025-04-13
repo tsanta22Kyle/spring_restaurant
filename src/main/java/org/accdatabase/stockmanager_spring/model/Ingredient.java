@@ -30,7 +30,7 @@ public class Ingredient {
     public Price getPriceAtDate() {
         return this.prices.stream()
                 .max(Comparator.comparing(Price::getDate))
-                .orElse(null); // or throw an exception if empty
+                .orElse(null);
     }
 
 

@@ -107,7 +107,7 @@ public class IngredientCrudRequests {
         try (Connection connection = dataSource.getConnection()) {
             toSave.forEach(entityToSave -> {
                 try (PreparedStatement statement =
-                             connection.prepareStatement("insert into ingredient (ingredient_id, name) values (?, ?)"
+                             connection.prepareStatement("insert into ingredient (ingredient_id, name,update_datetime) values (?, ?,?)"
                                      + " on conflict (ingredient_id) do update set name=excluded.name"
                                      + " returning ingredient_id, name")) {
 
@@ -120,6 +120,7 @@ public class IngredientCrudRequests {
 
                     statement.setString(1, id);
                     statement.setString(2, entityToSave.getName());
+                    statement.setTimestamp(3,Timestamp.from(Instant.now()));
                     ResultSet resultSet = statement.executeQuery();
 
                     if (resultSet.next()) {

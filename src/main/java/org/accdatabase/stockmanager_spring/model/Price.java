@@ -5,10 +5,13 @@ import lombok.*;
 
 import java.time.LocalDate;
 
-@NoArgsConstructor@AllArgsConstructor@Setter@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Setter
+@Getter
 public class Price {
     private String id;
-    private double value;
+    private Double value;
     private LocalDate date;
 
     private Ingredient ingredient;
@@ -21,5 +24,9 @@ public class Price {
                 ", date=" + date +
                 //", ingredient=id" + this.getIngredient().getIngredientId() +
                 '}';
+    }
+
+    public Double getValue() {
+        return value;
     }
 }

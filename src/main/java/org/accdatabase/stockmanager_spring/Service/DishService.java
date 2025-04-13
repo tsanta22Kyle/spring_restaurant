@@ -5,14 +5,18 @@ import org.accdatabase.stockmanager_spring.DAO.DataSource;
 import org.accdatabase.stockmanager_spring.DAO.operations.DishCrudRequests;
 import org.accdatabase.stockmanager_spring.DAO.operations.IngredientCrudRequests;
 import org.accdatabase.stockmanager_spring.Service.exception.ClientException;
+import org.accdatabase.stockmanager_spring.endpoint.mapper.DishIngredientRestMapper;
 import org.accdatabase.stockmanager_spring.endpoint.mapper.DishRestMapper;
 import org.accdatabase.stockmanager_spring.endpoint.rest.CreateDishIngredient;
+import org.accdatabase.stockmanager_spring.endpoint.rest.DishIngredientRest;
 import org.accdatabase.stockmanager_spring.endpoint.rest.DishRest;
 import org.accdatabase.stockmanager_spring.model.Dish;
 import org.accdatabase.stockmanager_spring.model.Ingredient;
+import org.accdatabase.stockmanager_spring.model.IngredientQuantity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +30,8 @@ public class DishService {
     private DishRestMapper dishRestMapper;
     @Autowired
     private IngredientCrudRequests ingredientCrudRequests;
+    @Autowired
+    private DishIngredientRestMapper dishIngredientRestMapper;
 
 
     public Optional<Object> getAll(int page, int size) {
@@ -38,7 +44,7 @@ public class DishService {
     return Optional.of(dishRests);
     }
 
-    public Optional<Object> addDishIngredient(String id, List<CreateDishIngredient> ingredients) {
+    public Optional<Object> addDishIngredient(String dishId, List<CreateDishIngredient> ingredients) {
 
         List<Ingredient> ingredientsToSave = ingredients.stream().map(createDishIngredient -> {
             Ingredient ingredient = new Ingredient();
@@ -47,5 +53,18 @@ public class DishService {
         }).toList();
 
       List<Ingredient> savedIngredients =  ingredientCrudRequests.saveAll(ingredientsToSave);
+        List<IngredientQuantity> dishIngredientsToSave = new ArrayList<>();
+      ingredients.forEach(createDishIngredient -> {
+          dishIngredientsToSave.addAll(savedIngredients.stream().map(ingredient -> {
+          IngredientQuantity ingredientQuantity = new IngredientQuantity();
+          ingredientQuantity.setIngredient(ingredient);
+          ingredientQuantity.setQuantity(createDishIngredient.getQuantity());
+          ingredientQuantity.setUnit(createDishIngredient.getUnit());
+          return ingredientQuantity;
+
+      }).toList());
+      });
+      List<DishIngredientRest> dishIngredientRestList = dishCrudRequests.saveAllDishIngredient(dishId,dishIngredientsToSave).stream().map(ingredientQuantity -> dishIngredientRestMapper.toRest(ingredientQuantity)).toList();
+      return Optional.of(  dishIngredientRestList);
     }
 }

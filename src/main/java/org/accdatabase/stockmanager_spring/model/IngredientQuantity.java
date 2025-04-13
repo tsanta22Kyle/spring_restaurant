@@ -34,7 +34,11 @@ public class IngredientQuantity {
         return quantity*ingredient.getPriceAtDate(date).getValue();
     }
     public double getTotalCost(){
+        if(ingredient.getPriceAtDate() != null){
+
         return quantity*ingredient.getPriceAtDate().getValue();
+        }
+        return 0.0;
     }
 
 

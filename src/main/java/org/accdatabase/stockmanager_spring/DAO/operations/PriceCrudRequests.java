@@ -35,28 +35,32 @@ public class PriceCrudRequests implements CrudRequests<Price> {
     @SneakyThrows
     public List<Price> saveAll(List<Price> entities) {
         List<Price> prices = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection()) {
-            for (Price entityToSave : entities) {
-                try (PreparedStatement statement = connection.prepareStatement(
-                        "INSERT INTO price (price_id, value, date, ingredient_id) " +
-                                "VALUES (?, ?, ?, ?) " +
-                                "ON CONFLICT (ingredient_id, date) DO UPDATE SET " +
-                                "value = EXCLUDED.value, price_id = EXCLUDED.price_id " +
-                                "RETURNING price_id, value, date, ingredient_id")) {
+        if (entities == null || entities.isEmpty()) {
 
-                    String id = entityToSave.getId() == null ? postgresNextReference.generateUUID() : entityToSave.getId();
-                    statement.setString(1, id);
-                    statement.setDouble(2, entityToSave.getValue());
-                    statement.setDate(3, Date.valueOf(entityToSave.getDate()));
-                    statement.setString(4, entityToSave.getIngredient().getIngredientId());
+            try (Connection connection = dataSource.getConnection()) {
+                for (Price entityToSave : entities) {
+                    try (PreparedStatement statement = connection.prepareStatement(
+                            "INSERT INTO price (price_id, value, date, ingredient_id) " +
+                                    "VALUES (?, ?, ?, ?) " +
+                                    "ON CONFLICT (ingredient_id, date) DO UPDATE SET " +
+                                    "value = EXCLUDED.value, price_id = EXCLUDED.price_id " +
+                                    "RETURNING price_id, value, date, ingredient_id")) {
 
-                    try (ResultSet rs = statement.executeQuery()) {
-                        if (rs.next()) {
-                            prices.add(priceMapper.apply(rs));
+                        String id = entityToSave.getId() == null ? postgresNextReference.generateUUID() : entityToSave.getId();
+                        statement.setString(1, id);
+                        statement.setDouble(2, entityToSave.getValue());
+                        statement.setDate(3, Date.valueOf(entityToSave.getDate()));
+                        statement.setString(4, entityToSave.getIngredient().getIngredientId());
+
+                        try (ResultSet rs = statement.executeQuery()) {
+                            if (rs.next()) {
+                                prices.add(priceMapper.apply(rs));
+                            }
                         }
                     }
                 }
             }
+            return prices;
         }
         return prices;
     }
