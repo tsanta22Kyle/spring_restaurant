@@ -53,36 +53,4 @@ public class DishCrudRequests {
         return dishes;
     }
 
-    @SneakyThrows
-    public List<IngredientQuantity> saveAllDishIngredient(String DishId,List<IngredientQuantity> ingredientsToSave) {
-        List<IngredientQuantity> ingredients = new ArrayList<>();
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement statement = conn.prepareStatement("INSERT INTO dish_ingredient(dish_id, ingredient_id, required_quantity, unit) VALUES (?,?,?,?)  RETURNING dish_id,ingredient_id,unit,required_quantity")
-        ) {
-
-            ingredientsToSave.forEach(entityToSave -> {
-                try {
-                statement.setString(1,DishId);
-                statement.setString(2,entityToSave.getIngredient().getIngredientId());
-                statement.setDouble(3,entityToSave.getQuantity());
-                statement.setObject(4,entityToSave.getUnit().toString(), Types.OTHER);
-
-                    try (ResultSet rs = statement.executeQuery()) {
-                        while (rs.next()) {
-                            ingredients.add(dishIngredientMapper.apply(rs));
-                        }
-                    }
-
-                }catch (SQLException e) {
-                    throw new ServerException(e);
-                }
-
-
-            });
-
-        }
-        return ingredients;
-    }
-
 }
