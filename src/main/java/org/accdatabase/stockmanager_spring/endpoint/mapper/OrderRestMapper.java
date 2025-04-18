@@ -14,7 +14,8 @@ public class OrderRestMapper {
 
     public OrderRest toRest(Order order) {
         List<DishOrderRest> orderRests = order.getDishOrderList().stream().map(dishOrder -> dishOrderRestMapper.toRest(dishOrder)).toList();
-    OrderRest orderRest = new OrderRest(order.getReference(),orderRests,order.getActualStatus());
+    OrderRest orderRest = new OrderRest(order.getId(),orderRests,order.getActualStatus());
+      //  System.out.println(order.getDishOrders());
     return orderRest;
     }
 

@@ -29,13 +29,17 @@ public class DishOrderMapper implements Function<ResultSet, DishOrder> {
         DishOrder dishOrder = new DishOrder();
         String id = resultSet.getString("id");
       // Order returnedOrder =  orderCrudRequests.findByOrderId(resultSet.getString("order_id"));
+
+
         List<OrderStatus> orderStatusList = orderStatusCrudRequests.getOrderStatusByDishOrderId(id);
+        System.out.println(orderStatusList);
         dishOrder.setDishOrderId(id);
         dishOrder.setQuantity(resultSet.getInt("quantity"));
 
         dishOrder.setDish(dishCrudRequests.findById(resultSet.getString("dish_id")));
       //  System.out.println(resultSet.getString("dish_id"));
        // dishOrder.setOrder();
+       // System.out.println("status list: " + orderStatusList);
         dishOrder.setStatusList(orderStatusList);
         return dishOrder;
     }

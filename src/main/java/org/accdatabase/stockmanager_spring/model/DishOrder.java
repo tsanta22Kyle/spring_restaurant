@@ -8,7 +8,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @EqualsAndHashCode
-@Setter
+@Setter@ToString
 public class DishOrder {
     private String dishOrderId;
     private int quantity;

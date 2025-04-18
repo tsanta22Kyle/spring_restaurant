@@ -48,6 +48,7 @@ public class OrderStatusCrudRequests {
 
     @SneakyThrows
     public List<OrderStatus> getOrderStatusByDishOrderId(String dishOrderId) {
+        System.out.println();
         List<OrderStatus> orderStatuses = new ArrayList<OrderStatus>();
         try (
                 Connection conn = dataSource.getConnection();
@@ -87,7 +88,10 @@ public class OrderStatusCrudRequests {
                     statement.setTimestamp(4, Timestamp.valueOf(dateTime));
 
                     try (ResultSet rs = statement.executeQuery()) {
+                        while (rs.next()){
+
                         createdOrderStatusList.add(orderStatusMapper.apply(rs));
+                        }
                     } catch (SQLException e) {
                         throw new ServerException(e);
                     }

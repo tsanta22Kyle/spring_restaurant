@@ -16,7 +16,6 @@ public class DishOrderStatusMapper implements Function<ResultSet, OrderStatus> {
         orderStatus.setId(resultSet.getString("id"));
         orderStatus.setOrderProcess(OrderProcess.valueOf(resultSet.getObject("order_status").toString()));
         orderStatus.setDishOrderStatusDatetime(resultSet.getTimestamp("do_datetime").toLocalDateTime());
-
         return orderStatus;
     }
 }

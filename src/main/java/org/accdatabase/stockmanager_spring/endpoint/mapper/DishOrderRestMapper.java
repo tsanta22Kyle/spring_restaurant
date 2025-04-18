@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class DishOrderRestMapper {
 
     public DishOrderRest toRest(DishOrder dishOrder) {
-        DishOrderRest dishOrderRest = new DishOrderRest(dishOrder.getDish().getName(),dishOrder.getDish().getUnitPrice(),dishOrder.getQuantity(),dishOrder.getActualStatus().getOrderProcess());
+        DishOrderRest dishOrderRest = new DishOrderRest(dishOrder.getDishOrderId(),dishOrder.getDish().getName(),dishOrder.getDish().getUnitPrice(),dishOrder.getQuantity(),dishOrder.getActualStatus().getOrderProcess());
         return dishOrderRest;
     }
 

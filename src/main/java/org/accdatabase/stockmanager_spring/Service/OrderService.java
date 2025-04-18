@@ -38,7 +38,7 @@ public class OrderService {
 
         if(orderStatus==OrderProcess.CONFIRMED){
             List<DishOrder> dishOrderList =  order1.getDishOrders();
-         boolean isConfirmed =  dishOrderList.stream().filter(dishOrder -> dishOrder.getStatusList().stream().filter(orderStatus1 -> orderStatus1.getOrderProcess()==OrderProcess.CONFIRMED ).toList().size() >= 1  ).toList().size() ==  dishOrderList.size() ;
+         boolean isConfirmed =  dishOrderList.stream().filter(dishOrder -> dishOrder.getActualStatus().getOrderProcess() == OrderProcess.CONFIRMED  ).toList().size() ==  dishOrderList.size() ;
             System.out.println("isConfirmed : "+isConfirmed);
          if(isConfirmed){
              OrderStatus newOrderStatus = new OrderStatus(orderStatus);
@@ -56,6 +56,9 @@ public class OrderService {
             return dishOrder;
         }).toList();
         order1.addDishOrder(dishOrders);
-        return Optional.of(dishOrderCrudRequests.saveAll(dishOrders));
+        dishOrderCrudRequests.saveAll(dishOrders);
+        Order updatedOrder = orderCrudRequests.findById(reference);
+       // System.out.println(updatedOrder.getDishOrders());
+        return Optional.of(orderRestMapper.toRest(updatedOrder));
     }
 }
