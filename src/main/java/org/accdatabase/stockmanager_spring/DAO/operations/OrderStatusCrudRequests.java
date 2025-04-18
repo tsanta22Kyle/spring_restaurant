@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -78,12 +79,12 @@ public class OrderStatusCrudRequests {
                         PreparedStatement statement = conn.prepareStatement("INSERT INTO order_status (id, order_id, order_status, order_status_datetime) VALUES (?,?,?,?) RETURNING id,order_id,order_status,order_status_datetime")
                 ) {
                     String id = orderStatus.getId() == null ? UUID.randomUUID().toString() : orderStatus.getId();
-
-                    System.out.println(id);
+                    LocalDateTime dateTime = orderStatus.getDishOrderStatusDatetime()==null ?LocalDateTime.now():orderStatus.getDishOrderStatusDatetime();
+                    //System.out.println(id);
                     statement.setString(1, id);
                     statement.setString(2, orderId);
                     statement.setObject(3, orderStatus.getOrderProcess(), Types.OTHER);
-                    statement.setTimestamp(4, Timestamp.valueOf(orderStatus.getDishOrderStatusDatetime()));
+                    statement.setTimestamp(4, Timestamp.valueOf(dateTime));
 
                     try (ResultSet rs = statement.executeQuery()) {
                         createdOrderStatusList.add(orderStatusMapper.apply(rs));

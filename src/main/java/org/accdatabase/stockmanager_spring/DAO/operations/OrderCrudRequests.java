@@ -8,10 +8,8 @@ import org.accdatabase.stockmanager_spring.model.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 @Repository
 public class OrderCrudRequests implements CrudRequests<Order>{
@@ -65,11 +63,37 @@ public class OrderCrudRequests implements CrudRequests<Order>{
 
     @Override
     public List<Order> findAll(int page, int size) {
-        return List.of();
+    throw new RuntimeException("not implemented yet");
     }
-
+    @SneakyThrows
     @Override
     public List<Order> saveAll(List<Order> entityToSave) {
-        return List.of();
+        List<Order> savedOrders = new ArrayList<>();
+        try (
+                Connection conn = dataSource.getConnection()
+                ){
+            entityToSave.forEach(orderToSave -> {
+                try (
+                        PreparedStatement statement = conn.prepareStatement("INSERT INTO \"order\" (reference, order_time, order_id) VALUES (?,?,?,?) ON CONFLICT (reference) DO UPDATE SET order_time=excluded.order_time RETURNING order_time,reference,order_id")
+                        ){
+                    statement.setString(1, orderToSave.getReference());
+                    statement.setTimestamp(2, Timestamp.valueOf(orderToSave.getOrderDatetime()));
+                    statement.setString(3,orderToSave.getId());
+
+                    try (ResultSet rs = statement.executeQuery()){
+                        while (rs.next()) {
+                            savedOrders.add(orderMapper.apply(rs));
+                        }
+                    }catch (SQLException e){
+                        throw new ServerException(e);
+                    }
+                }catch (SQLException e){
+                    throw new ServerException(e);
+                }
+            });
+
+
+        }
+        return savedOrders;
     }
 }
