@@ -35,7 +35,15 @@ public class OrderRestController {
 
     @PutMapping("/{reference}/dishes")
     public ResponseEntity<Object> updateOrderDishes(@PathVariable String reference, @RequestBody UpdateOrder order) {
+        try{
         return ResponseEntity.ok(orderService.updateOrderDishes(reference,order));
+        }catch (ClientException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }catch (NotFoundException e){
+            return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
+        }catch (ServerException e){
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
     }
 
 }
