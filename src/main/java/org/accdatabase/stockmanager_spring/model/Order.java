@@ -101,6 +101,9 @@ public class Order {
     }
 
     public List<DishOrder> addDishOrder(List<DishOrder> dishOrderList) {
+            dishOrderList.forEach(dishOrder -> {
+                dishOrder.setOrder(this);
+            });
         if (this.getActualStatus() != OrderProcess.CREATED) {
             throw new RuntimeException("this order can't be modified");
         }

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.accdatabase.stockmanager_spring.DAO.DataSource;
 import org.accdatabase.stockmanager_spring.DAO.mapper.DishIngredientMapper;
+import org.accdatabase.stockmanager_spring.DAO.mapper.DishMapper;
 import org.accdatabase.stockmanager_spring.Service.exception.ServerException;
 import org.accdatabase.stockmanager_spring.model.Dish;
 import org.accdatabase.stockmanager_spring.model.IngredientQuantity;
@@ -22,28 +23,24 @@ public class DishCrudRequests {
     @Autowired
     private DataSource dataSource;
     @Autowired
-    private DishIngredientMapper dishIngredientMapper;
+    private DishMapper dishMapper;
 
     public List<Dish> findAll(int page, int size) {
         List<Dish> dishes = new ArrayList<>();
         try (
                 Connection conn = dataSource.getConnection();
-                PreparedStatement statement = conn.prepareStatement("SELECT dish.dish_id,dish.name,dish.unit_price from dish join dish_ingredient di on dish.dish_id = di.dish_id join ingredient i on di.ingredient_id = i.ingredient_id limit ? offset ?")
+                PreparedStatement statement = conn.prepareStatement("SELECT dish.dish_id,dish.name,dish.unit_price from dish limit ? offset ?")
         ) {
             statement.setInt(1, size);
             statement.setInt(2, size * (page - 1));
             try (
                     ResultSet rs = statement.executeQuery()
             ) {
-                Dish dish = new Dish();
-                while (rs.next()) {
-                    dish.setDishId(rs.getString("dish_id"));
-                    dish.setName(rs.getString(2));
-                    dish.setUnitPrice(rs.getInt("unit_price"));
-                    dish.setIngredientList(ingredientCrudRequests.findIngredientByDishId(dish.getDishId()));
 
+                while (rs.next()) {
+
+                dishes.add(dishMapper.apply(rs));
                 }
-                dishes.add(dish);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -51,6 +48,28 @@ public class DishCrudRequests {
 
 
         return dishes;
+    }
+
+    public Dish findById(String dishId){
+        Dish dish = null;
+
+        try (
+                Connection conn = dataSource.getConnection();
+                PreparedStatement statement = conn.prepareStatement("SELECT dish.dish_id,dish.name,dish.unit_price from dish where dish_id = ?")
+        ) {
+            statement.setString(1,dishId);
+            try (
+                    ResultSet rs = statement.executeQuery()
+            ) {
+
+                if(rs.next()) {
+                    dish =  dishMapper.apply(rs);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return dish;
     }
 
 }

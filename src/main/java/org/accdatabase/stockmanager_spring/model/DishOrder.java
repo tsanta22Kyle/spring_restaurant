@@ -14,6 +14,7 @@ public class DishOrder {
     private int quantity;
     private List<OrderStatus> statusList = new ArrayList<>();
     private Dish dish;
+    private Order order;
 
 
     //une commande de plat zany ty
@@ -44,6 +45,9 @@ public class DishOrder {
     }
 
     public OrderStatus getActualStatus() {
+        if(statusList.isEmpty()) {
+            return new OrderStatus(OrderProcess.CREATED);
+        }
         return statusList.stream().sorted((o1, o2) -> o1.getDishOrderStatusDatetime().compareTo(o2.getDishOrderStatusDatetime())).toList().getLast();
     }
     public OrderStatus updateActualStatus(OrderStatus newStatus) {
