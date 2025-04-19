@@ -31,14 +31,33 @@ public class DishOrderCrudRequests {
 
 
     @SneakyThrows
-    public List<DishOrder> getDishOrdersByOrderId(String orderId){
+    public List<DishOrder> getDishOrdersByRef(String reference){
             List<DishOrder> dishOrders = new ArrayList<>();
             try(
                     Connection conn = dataSource.getConnection();
-                    PreparedStatement stmt = conn.prepareStatement("SELECT dish_id,order_id,quantity,id FROM dish_order  d WHERE d.order_id= ?")
+                    PreparedStatement stmt = conn.prepareStatement("SELECT dish_id,o.order_id,quantity,dish_order.id FROM dish_order join public.\"order\" o on o.order_id = dish_order.order_id  WHERE o.reference= ?")
                     ){
                 //System.out.println(orderId);
-                stmt.setString(1,orderId);
+                stmt.setString(1,reference);
+                try(ResultSet rs = stmt.executeQuery()){
+                    while(rs.next()){
+                        dishOrders.add(dishOrderMapper.apply(rs));
+                    }
+                }catch (SQLException e){
+                    throw new ServerException(e);
+                }
+
+            }
+            return dishOrders;
+    } @SneakyThrows
+    public List<DishOrder> getDishOrdersByOrderId(String id){
+            List<DishOrder> dishOrders = new ArrayList<>();
+            try(
+                    Connection conn = dataSource.getConnection();
+                    PreparedStatement stmt = conn.prepareStatement("SELECT dish_id,o.order_id,quantity,dish_order.id FROM dish_order join public.\"order\" o on o.order_id = dish_order.order_id  WHERE o.order_id= ?")
+                    ){
+                //System.out.println(orderId);
+                stmt.setString(1,id);
                 try(ResultSet rs = stmt.executeQuery()){
                     while(rs.next()){
                         dishOrders.add(dishOrderMapper.apply(rs));

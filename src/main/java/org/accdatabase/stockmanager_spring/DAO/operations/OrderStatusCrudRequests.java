@@ -48,7 +48,7 @@ public class OrderStatusCrudRequests {
 
     @SneakyThrows
     public List<OrderStatus> getOrderStatusByDishOrderId(String dishOrderId) {
-        System.out.println();
+       // System.out.println();
         List<OrderStatus> orderStatuses = new ArrayList<OrderStatus>();
         try (
                 Connection conn = dataSource.getConnection();
@@ -84,6 +84,7 @@ public class OrderStatusCrudRequests {
                     //System.out.println(id);
                     statement.setString(1, id);
                     statement.setString(2, orderId);
+                    System.out.println("order process invalid : "+orderStatus.getOrderProcess());
                     statement.setObject(3, orderStatus.getOrderProcess(), Types.OTHER);
                     statement.setTimestamp(4, Timestamp.valueOf(dateTime));
 
@@ -115,13 +116,14 @@ public class OrderStatusCrudRequests {
                         PreparedStatement statement = conn.prepareStatement("INSERT INTO dish_order_status (id, dish_order_id, order_status, do_datetime) VALUES (?,?,?,?) RETURNING id,dish_order_id,order_status,do_datetime")
                 ) {
                     String id = orderStatus.getId() == null ? UUID.randomUUID().toString() : orderStatus.getId();
+                    LocalDateTime dateTime = orderStatus.getDishOrderStatusDatetime()==null?LocalDateTime.now():orderStatus.getDishOrderStatusDatetime();
                     // System.out.println(id);
                     statement.setString(1, id);
                     statement.setString(2, dishOrderId);
                     //System.out.println("process : "+orderStatus.getOrderProcess());
-
-                    statement.setObject(3, orderStatus.getOrderProcess().name(), Types.OTHER);
-                    statement.setTimestamp(4, Timestamp.valueOf(orderStatus.getDishOrderStatusDatetime()));
+                    System.out.println("order process invalid : "+orderStatus.getOrderProcess());
+                    statement.setObject(3, orderStatus.getOrderProcess(), Types.OTHER);
+                    statement.setTimestamp(4, Timestamp.valueOf(dateTime));
 
                     try (ResultSet rs = statement.executeQuery()) {
                         while (rs.next()) {

@@ -3,7 +3,8 @@ package org.accdatabase.stockmanager_spring.model;
 import lombok.*;
 
 import java.time.LocalDateTime;
-@AllArgsConstructor@NoArgsConstructor@Getter@EqualsAndHashCode@Setter
+
+@AllArgsConstructor@NoArgsConstructor@Getter@EqualsAndHashCode@Setter@ToString
 public class OrderStatus {
     private String id;
     private LocalDateTime dishOrderStatusDatetime;

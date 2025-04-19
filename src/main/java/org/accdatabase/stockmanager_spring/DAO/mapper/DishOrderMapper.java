@@ -39,7 +39,7 @@ public class DishOrderMapper implements Function<ResultSet, DishOrder> {
         dishOrder.setDish(dishCrudRequests.findById(resultSet.getString("dish_id")));
       //  System.out.println(resultSet.getString("dish_id"));
        // dishOrder.setOrder();
-       // System.out.println("status list: " + orderStatusList);
+        System.out.println("status list: " + orderStatusList);
         dishOrder.setStatusList(orderStatusList);
         return dishOrder;
     }

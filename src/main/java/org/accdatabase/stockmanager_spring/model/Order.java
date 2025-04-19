@@ -14,6 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode
+@ToString
 public class Order {
     private String id;
     private LocalDateTime orderDatetime;
@@ -64,12 +65,14 @@ public class Order {
                         throw new ClientException("Order status already in preparation");
                     }
                     case FINISHED -> {
-                        if (!this.getDishOrderList().stream().map(dishOrder -> dishOrder.getStatusList().stream().max(Comparator.comparing(orderStatus -> orderStatus.getDishOrderStatusDatetime()))).toList().contains(OrderProcess.CONFIRMED)) {
+                        boolean allDishesConfirmed = this.getDishOrderList().stream()
+                                .allMatch(dishOrder -> dishOrder.getActualStatus().getOrderProcess() == OrderProcess.FINISHED);
 
-                            throw new ClientException("Order's dish orders are not confirmed yet ");
-                        } else {
-                            this.statusList.add(status);
+                        if (!allDishesConfirmed) {
+                            throw new ClientException("Not all dish orders are finished yet");
                         }
+
+                        this.statusList.add(status);
                     }
                     case DELIVERED -> {
                         throw new ClientException("Order status not finished yet");
@@ -82,14 +85,18 @@ public class Order {
                         throw new ClientException("Order status already finished");
                     }
                     case DELIVERED -> {
-                        if (!this.getDishOrderList().stream().map(dishOrder -> dishOrder.getStatusList().stream().max(Comparator.comparing(orderStatus -> orderStatus.getDishOrderStatusDatetime()))).toList().contains(OrderProcess.FINISHED)) {
-                            throw new ClientException("Order's dish orders are not finished yet ");
-                        } else {
-                            this.statusList.add(status);
+                        boolean allDishesDelivered = this.getDishOrderList().stream()
+                                .allMatch(dishOrder -> dishOrder.getActualStatus().getOrderProcess() == OrderProcess.DELIVERED);
+
+                        if (!allDishesDelivered) {
+                            throw new ClientException("Not all dish orders are delivered yet");
                         }
+
+                        this.statusList.add(status);
                     }
                 }
             }
+
             case DELIVERED -> {
                 switch (newStatus) {
                     case CREATED, CONFIRMED, IN_PREPARATION, FINISHED, DELIVERED -> {

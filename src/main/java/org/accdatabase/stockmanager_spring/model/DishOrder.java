@@ -1,6 +1,7 @@
 package org.accdatabase.stockmanager_spring.model;
 
 import lombok.*;
+import org.accdatabase.stockmanager_spring.Service.exception.ClientException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,7 @@ public class DishOrder {
                 MissingIngredients.add(new IngredientQuantity(ingredientQuantity.getIngredient(), missingQuantity, ingredientQuantity.getUnit()));
             });
 
-            throw new RuntimeException(" not available quantity "+ MissingIngredients);
+            throw new ClientException(" not available quantity "+ MissingIngredients);
         }
        else {
 
@@ -53,36 +54,56 @@ public class DishOrder {
     public OrderStatus updateActualStatus(OrderStatus newStatus) {
         OrderProcess oldStatus = this.getActualStatus().getOrderProcess();
         OrderProcess newOrderStatus = newStatus.getOrderProcess();
+
         switch (oldStatus) {
             case CREATED -> {
                 switch (newOrderStatus) {
-                    case CREATED -> {
-                        throw new IllegalArgumentException("already created");
-                    }case CONFIRMED -> {
-                        this.statusList.add(newStatus);
-                    }case IN_PREPARATION,FINISHED,DELIVERED ->{
-                        throw new IllegalArgumentException("not confirmed yet");
-                    }
+                    case CREATED -> throw new ClientException("DishOrder status already created");
+                    case CONFIRMED -> this.statusList.add(newStatus);
+                    case IN_PREPARATION, FINISHED, DELIVERED ->
+                            throw new ClientException("DishOrder not confirmed yet");
                 }
             }
+
             case CONFIRMED -> {
-                    switch (newOrderStatus) {
-                        case CONFIRMED,CREATED -> {
-                            throw new IllegalArgumentException("already confirmed");
-                        }
-                        case IN_PREPARATION -> {
-                            this.statusList.add(newStatus);
-                        }
-                        case FINISHED,DELIVERED -> {
-                            throw new IllegalArgumentException("not in preparation yet");
-                        }
-                    }
+                switch (newOrderStatus) {
+                    case CREATED, CONFIRMED ->
+                            throw new ClientException("DishOrder status already confirmed");
+                    case IN_PREPARATION -> this.statusList.add(newStatus);
+                    case FINISHED, DELIVERED ->
+                            throw new ClientException("DishOrder not in preparation yet");
+                }
             }
 
-        }
-return newStatus;
+            case IN_PREPARATION -> {
+                switch (newOrderStatus) {
+                    case CREATED, CONFIRMED, IN_PREPARATION ->
+                            throw new ClientException("DishOrder already in preparation");
+                    case FINISHED -> this.statusList.add(newStatus);
+                    case DELIVERED ->
+                            throw new ClientException("DishOrder not finished yet");
+                }
+            }
 
+            case FINISHED -> {
+                switch (newOrderStatus) {
+                    case CREATED, CONFIRMED, IN_PREPARATION, FINISHED ->
+                            throw new ClientException("DishOrder already finished");
+                    case DELIVERED -> this.statusList.add(newStatus);
+                }
+            }
+
+            case DELIVERED -> {
+                switch (newOrderStatus) {
+                    case CREATED, CONFIRMED, IN_PREPARATION, FINISHED, DELIVERED ->
+                            throw new ClientException("DishOrder already delivered");
+                }
+            }
+        }
+
+        return newStatus;
     }
+
 
 
 

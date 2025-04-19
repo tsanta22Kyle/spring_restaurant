@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-@AllArgsConstructor@NoArgsConstructor@Getter@Setter
+@AllArgsConstructor@NoArgsConstructor@Getter@Setter@EqualsAndHashCode
 public class Dish {
     private String dishId;
     private String name;
